@@ -1,1 +1,886 @@
-Hello world
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Visual examples for clarifying Cranberger Segment matching rules.">
+  <title>Segment matching examples</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #596675;
+      --canvas: #f3f6f8;
+      --paper: #ffffff;
+      --line: #d9e0e6;
+      --navy: #142b3d;
+      --navy-soft: #e8f0f5;
+      --teal: #087f7a;
+      --teal-soft: #e4f5f3;
+      --amber: #b55e08;
+      --amber-soft: #fff2dc;
+      --red: #aa3636;
+      --red-soft: #fdeaea;
+      --green: #24724d;
+      --green-soft: #e5f4eb;
+      --purple: #6847a6;
+      --purple-soft: #f0eafd;
+      --shadow: 0 14px 35px rgba(20, 43, 61, 0.08);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 24px;
+    }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.58;
+    }
+
+    a { color: inherit; }
+
+    code {
+      border-radius: 5px;
+      background: #edf1f4;
+      padding: 0.12rem 0.34rem;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.9em;
+    }
+
+    .masthead {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      background:
+        radial-gradient(circle at 86% -40%, rgba(35, 175, 164, 0.35), transparent 44%),
+        var(--navy);
+      color: white;
+    }
+
+    .masthead-inner {
+      width: min(1480px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 28px 0 25px;
+    }
+
+    .eyebrow {
+      margin: 0 0 5px;
+      color: #83ddd4;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      margin-top: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.16;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin-bottom: 9px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 600;
+      letter-spacing: -0.035em;
+    }
+
+    .masthead p {
+      max-width: 900px;
+      margin: 0;
+      color: #d6e2e9;
+      font-size: 1.02rem;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 20px;
+    }
+
+    .legend-item, .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .legend-item { padding: 5px 10px; }
+    .legend-item.yes { background: var(--green-soft); color: #154c32; }
+    .legend-item.no { background: var(--red-soft); color: #792121; }
+    .legend-item.open { background: var(--amber-soft); color: #75400b; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 230px minmax(0, 1fr);
+      gap: 30px;
+      width: min(1480px, calc(100% - 40px));
+      margin: 30px auto 70px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 8px 24px rgba(20, 43, 61, 0.05);
+      padding: 13px;
+      backdrop-filter: blur(10px);
+    }
+
+    .sidebar strong {
+      display: block;
+      padding: 7px 9px 8px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .sidebar a {
+      display: block;
+      border-radius: 8px;
+      padding: 8px 9px;
+      color: #394858;
+      font-size: 0.88rem;
+      text-decoration: none;
+    }
+
+    .sidebar a:hover, .sidebar a:focus-visible {
+      background: var(--navy-soft);
+      color: var(--navy);
+      outline: none;
+    }
+
+    main { min-width: 0; }
+
+    .section {
+      margin-bottom: 28px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      padding: clamp(22px, 4vw, 42px);
+    }
+
+    .section-kicker {
+      margin: 0 0 6px;
+      color: var(--teal);
+      font-size: 0.77rem;
+      font-weight: 850;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin-bottom: 12px;
+      color: var(--navy);
+      font-size: clamp(1.65rem, 3vw, 2.35rem);
+      letter-spacing: -0.025em;
+    }
+
+    h3 {
+      margin: 34px 0 9px;
+      color: var(--navy);
+      font-size: 1.34rem;
+    }
+
+    .lead {
+      max-width: 900px;
+      margin: 0 0 22px;
+      color: var(--muted);
+    }
+
+    .diagram-shell {
+      margin: 24px 0 30px;
+      overflow-x: auto;
+      border: 1px solid #cad6de;
+      border-radius: 14px;
+      background:
+        linear-gradient(rgba(20, 43, 61, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20, 43, 61, 0.035) 1px, transparent 1px),
+        #f8fafb;
+      background-size: 24px 24px;
+    }
+
+    figure { margin: 0; }
+
+    svg.graph {
+      display: block;
+      width: 100%;
+      min-width: 1050px;
+      height: auto;
+    }
+
+    figcaption {
+      border-top: 1px solid #dce4e9;
+      padding: 11px 15px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .lane {
+      fill: rgba(255, 255, 255, 0.68);
+      stroke: #d5dee4;
+      stroke-width: 1.4;
+    }
+
+    .lane-title {
+      fill: #536273;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+
+    .node rect { stroke-width: 2; }
+    .node.timeline rect { fill: var(--purple-soft); stroke: #8668bb; }
+    .node.tag rect { fill: var(--teal-soft); stroke: #2a9a93; }
+    .node.property rect { fill: var(--amber-soft); stroke: #cf812f; }
+    .node.subdivision rect { fill: var(--navy-soft); stroke: #4b7692; }
+    .node.country rect { fill: #e6f0ff; stroke: #4779bd; }
+
+    .node-id {
+      fill: #17202a;
+      font-size: 13.5px;
+      font-weight: 850;
+    }
+
+    .node-name {
+      fill: #4d5b68;
+      font-size: 11.8px;
+    }
+
+    .edge {
+      fill: none;
+      stroke: #526577;
+      stroke-width: 1.8;
+      marker-end: url(#arrow-a);
+    }
+
+    .edge.reference {
+      stroke: #a45c15;
+      stroke-dasharray: 6 5;
+    }
+
+    .edge.location { stroke: #3778ad; }
+    .edge.property-edge { stroke: #a26a22; }
+
+    .edge-label {
+      paint-order: stroke;
+      stroke: #f8fafb;
+      stroke-width: 5px;
+      stroke-linejoin: round;
+      fill: #405363;
+      font-size: 10.5px;
+      font-weight: 750;
+    }
+
+    .filter-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: fit-content;
+      max-width: 100%;
+      margin: 12px 0 16px;
+      border-left: 4px solid var(--teal);
+      border-radius: 0 9px 9px 0;
+      background: var(--teal-soft);
+      padding: 10px 14px;
+      color: #165853;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 11px 13px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f2f6f8;
+      color: #354655;
+      font-size: 0.76rem;
+      letter-spacing: 0.055em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fafcfd; }
+
+    .status {
+      min-width: 74px;
+      justify-content: center;
+      padding: 3px 8px;
+    }
+
+    .status.yes { background: var(--green-soft); color: var(--green); }
+    .status.no { background: var(--red-soft); color: var(--red); }
+    .status.open { background: var(--amber-soft); color: var(--amber); }
+
+    .note {
+      margin: 17px 0 0;
+      border: 1px solid #d9e4ea;
+      border-radius: 10px;
+      background: #f7fafb;
+      padding: 13px 15px;
+      color: #435260;
+      font-size: 0.91rem;
+    }
+
+    .scope-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 11px;
+      margin: 20px 0 0;
+    }
+
+    .relationship-notes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .relationship-notes p {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #f8fafb;
+      padding: 10px 12px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .relationship-notes strong { color: var(--navy); }
+
+    .scope-card {
+      border-top: 3px solid var(--teal);
+      border-radius: 9px;
+      background: #f5f9fa;
+      padding: 13px;
+    }
+
+    .scope-card code {
+      display: inline-block;
+      margin-bottom: 6px;
+      color: var(--navy);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .scope-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.83rem;
+    }
+
+    .baseline {
+      counter-reset: baseline;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 22px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .baseline li {
+      counter-increment: baseline;
+      position: relative;
+      min-height: 78px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 13px 14px 13px 54px;
+      background: #fbfcfd;
+    }
+
+    .baseline li::before {
+      content: counter(baseline, decimal-leading-zero);
+      position: absolute;
+      top: 13px;
+      left: 14px;
+      color: var(--teal);
+      font-family: Georgia, serif;
+      font-size: 1.08rem;
+      font-weight: 700;
+    }
+
+    .decisions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 11px;
+      margin: 22px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .decisions li {
+      border-left: 4px solid var(--amber);
+      border-radius: 0 9px 9px 0;
+      background: var(--amber-soft);
+      padding: 12px 14px;
+      color: #5e3d17;
+    }
+
+    .decisions strong { color: #422b10; }
+
+    .page-footer {
+      width: min(1480px, calc(100% - 40px));
+      margin: -40px auto 35px;
+      color: #667482;
+      font-size: 0.82rem;
+      text-align: right;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+      }
+      .sidebar strong { width: 100%; }
+      .scope-grid, .relationship-notes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 680px) {
+      .masthead-inner, .layout, .page-footer { width: min(100% - 24px, 1480px); }
+      .layout { margin-top: 12px; }
+      .section { padding: 20px 15px; border-radius: 12px; }
+      .baseline, .decisions, .scope-grid, .relationship-notes { grid-template-columns: 1fr; }
+      th, td { padding: 9px 10px; }
+    }
+
+    @media print {
+      body { background: white; font-size: 11pt; }
+      .masthead { background: white; color: black; border-bottom: 2px solid #222; }
+      .masthead p, .eyebrow { color: #333; }
+      .layout { display: block; width: 100%; margin: 18px 0; }
+      .sidebar { display: none; }
+      .section { break-inside: avoid; border: 0; box-shadow: none; padding: 12px 0; }
+      .diagram-shell { break-inside: avoid; }
+      svg.graph { min-width: 0; }
+      .page-footer { width: 100%; margin: 20px 0 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <p class="eyebrow">Requirements clarification</p>
+      <h1>Segment matching examples</h1>
+      <p>Example graph states and segment results for deciding how tags, properties, locations, subdivisions, and timeline entries should match.</p>
+      <div class="legend" aria-label="Result status legend">
+        <span class="legend-item yes">✓ Required match</span>
+        <span class="legend-item no">× Excluded</span>
+        <span class="legend-item open">? Decision needed</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" aria-label="Page sections">
+      <strong>On this page</strong>
+      <a href="#relationships">Entity relationships</a>
+      <a href="#state-a">A · Tag and property</a>
+      <a href="#a1">A1 · Select a tag</a>
+      <a href="#a2">A2 · Select a property</a>
+      <a href="#a3">A3 · Select several</a>
+      <a href="#state-b">B · Location branch</a>
+      <a href="#b1">B1 · Sweden branch</a>
+      <a href="#b2">B2 · Scope levels</a>
+      <a href="#baseline">Proposed baseline</a>
+      <a href="#decisions">Decisions required</a>
+    </nav>
+
+    <main>
+      <section class="section" id="relationships">
+        <p class="section-kicker">Reference model</p>
+        <h2>Entity relationships</h2>
+        <p class="lead">The complete relationship model used by every example below. Solid purple lines from a timeline entry identify its single source; dashed amber lines identify optional references.</p>
+
+        <figure class="diagram-shell">
+          <svg class="graph" viewBox="0 0 1380 590" role="img" aria-labelledby="relationships-title relationships-desc">
+            <title id="relationships-title">Entity relationship diagram</title>
+            <desc id="relationships-desc">Tags connect to properties and locations. Properties connect to locations. Subdivisions connect to a parent and properties. Timeline entries have one source and may reference any supported entity.</desc>
+            <defs>
+              <marker id="arrow-er" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#526577"></path>
+              </marker>
+            </defs>
+
+            <rect class="lane" x="24" y="28" width="1332" height="530" rx="14"></rect>
+            <text class="lane-title" x="50" y="58">Domain entities and allowed connections</text>
+
+            <!-- Structural relationships -->
+            <path class="edge property-edge" style="marker-end:url(#arrow-er)" d="M310 118 L395 118"></path>
+            <text class="edge-label" x="316" y="105">HasProperty · 0..*</text>
+
+            <path class="edge location" style="marker-end:url(#arrow-er)" d="M310 91 C510 15 685 15 875 91"></path>
+            <text class="edge-label" x="518" y="31">HAS_LOCATION · 0..1 total</text>
+            <path class="edge location" style="marker-end:url(#arrow-er)" d="M310 134 C550 205 875 205 1070 134"></path>
+            <text class="edge-label" x="543" y="195">HAS_LOCATION · 0..1 total</text>
+
+            <path class="edge location" style="marker-end:url(#arrow-er)" d="M625 91 C715 52 790 52 875 91"></path>
+            <text class="edge-label" x="678" y="58">HAS_LOCATION · 0..1 total</text>
+            <path class="edge location" style="marker-end:url(#arrow-er)" d="M625 134 C760 178 935 178 1070 134"></path>
+            <text class="edge-label" x="724" y="172">HAS_LOCATION · 0..1 total</text>
+
+            <path class="edge location" style="marker-end:url(#arrow-er)" d="M1070 104 L1105 104 C1025 208 970 208 960 146"></path>
+            <text class="edge-label" x="942" y="217">SUBDIVISION_PARENT · exactly 1 total</text>
+            <path class="edge location" style="marker-end:url(#arrow-er)" d="M1185 146 C1295 176 1295 62 1185 90"></path>
+            <text class="edge-label" x="1201" y="53">parent may be another subdivision</text>
+            <path class="edge property-edge" style="marker-end:url(#arrow-er)" d="M1070 145 C930 270 775 270 625 145"></path>
+            <text class="edge-label" x="790" y="263">HAS_PROPERTY · 0..*</text>
+
+            <!-- Timeline source relationships -->
+            <path class="edge" style="stroke:#6847a6;marker-end:url(#arrow-er)" d="M605 451 C450 410 280 295 205 146"></path>
+            <path class="edge" style="stroke:#6847a6;marker-end:url(#arrow-er)" d="M640 438 C605 355 535 250 510 146"></path>
+            <path class="edge" style="stroke:#6847a6;marker-end:url(#arrow-er)" d="M740 438 C775 355 900 250 960 146"></path>
+            <path class="edge" style="stroke:#6847a6;marker-end:url(#arrow-er)" d="M775 451 C930 410 1110 295 1175 146"></path>
+
+            <!-- Timeline reference relationships -->
+            <path class="edge reference" style="marker-end:url(#arrow-er)" d="M590 470 C410 450 215 320 180 146"></path>
+            <path class="edge reference" style="marker-end:url(#arrow-er)" d="M625 480 C535 405 485 275 480 146"></path>
+            <path class="edge reference" style="marker-end:url(#arrow-er)" d="M755 480 C845 405 930 275 930 146"></path>
+            <path class="edge reference" style="marker-end:url(#arrow-er)" d="M790 470 C970 450 1165 320 1200 146"></path>
+
+            <text class="edge-label" x="402" y="369">HAS_SOURCE · exactly 1 total</text>
+            <text class="edge-label" x="806" y="407">REFERENCED_BY · 0..*</text>
+
+            <g class="node tag"><rect x="90" y="90" width="220" height="56" rx="9"></rect><text class="node-id" x="108" y="113">Tag</text><text class="node-name" x="108" y="132">Filter, source, or reference</text></g>
+            <g class="node property"><rect x="395" y="90" width="230" height="56" rx="9"></rect><text class="node-id" x="413" y="113">Property</text><text class="node-name" x="413" y="132">Filter, source, or reference</text></g>
+            <g class="node country"><rect x="875" y="90" width="185" height="56" rx="9"></rect><text class="node-id" x="893" y="113">Country</text><text class="node-name" x="893" y="132">Location root</text></g>
+            <g class="node subdivision"><rect x="1070" y="90" width="220" height="56" rx="9"></rect><text class="node-id" x="1088" y="113">CountrySubdivision</text><text class="node-name" x="1088" y="132">Hierarchical location</text></g>
+            <g class="node timeline"><rect x="565" y="438" width="250" height="70" rx="11"></rect><text class="node-id" x="585" y="466">TimelineEntry</text><text class="node-name" x="585" y="487">One source · many references</text></g>
+          </svg>
+          <figcaption>Relationship direction matches the persisted graph: arrows point from the owning node to its target.</figcaption>
+        </figure>
+
+        <div class="relationship-notes" aria-label="Relationship cardinality notes">
+          <p><strong>Tag:</strong> many properties; at most one location in total.</p>
+          <p><strong>Property:</strong> at most one location in total.</p>
+          <p><strong>CountrySubdivision:</strong> exactly one parent; many properties.</p>
+          <p><strong>TimelineEntry source:</strong> exactly one supported entity in total.</p>
+          <p><strong>TimelineEntry references:</strong> many entities of any supported type.</p>
+          <p><strong>Supported location targets:</strong> Country or CountrySubdivision.</p>
+        </div>
+      </section>
+
+      <section class="section" id="state-a">
+        <p class="section-kicker">Database state A</p>
+        <h2>Tag and property matching</h2>
+        <p class="lead">This state separates direct sources, tag-to-property expansion, subdivision properties, reference-only connections, and an unrelated group.</p>
+
+        <figure class="diagram-shell">
+          <svg class="graph" viewBox="0 0 1400 680" role="img" aria-labelledby="state-a-title state-a-desc">
+            <title id="state-a-title">Tag and property matching graph</title>
+            <desc id="state-a-desc">Timeline entries on the left connect to tag and property sources in the middle. Subdivisions on the right connect to properties.</desc>
+            <defs>
+              <marker id="arrow-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#526577"></path>
+              </marker>
+            </defs>
+
+            <rect class="lane" x="20" y="28" width="400" height="620" rx="14"></rect>
+            <rect class="lane" x="470" y="28" width="450" height="620" rx="14"></rect>
+            <rect class="lane" x="970" y="28" width="410" height="620" rx="14"></rect>
+            <text class="lane-title" x="45" y="58">Timeline entries</text>
+            <text class="lane-title" x="495" y="58">Tags and properties</text>
+            <text class="lane-title" x="995" y="58">Subdivision results</text>
+
+            <path class="edge" d="M350 112 C455 112 500 112 605 112"></path>
+            <text class="edge-label" x="439" y="102">HAS_SOURCE</text>
+            <path class="edge" d="M350 202 C460 202 495 222 605 222"></path>
+            <text class="edge-label" x="437" y="198">HAS_SOURCE</text>
+            <path class="edge" d="M350 292 C460 292 495 322 605 322"></path>
+            <text class="edge-label" x="437" y="290">HAS_SOURCE</text>
+            <path class="edge" d="M350 382 C470 382 485 542 605 542"></path>
+            <text class="edge-label" x="430" y="431">HAS_SOURCE</text>
+            <path class="edge" d="M350 492 C460 492 495 432 605 432"></path>
+            <text class="edge-label" x="437" y="463">HAS_SOURCE</text>
+            <path class="edge reference" d="M350 508 C460 508 495 132 605 132"></path>
+            <text class="edge-label" x="437" y="317">REFERENCED_BY</text>
+            <path class="edge" d="M350 582 C470 582 485 562 605 562"></path>
+            <text class="edge-label" x="437" y="582">HAS_SOURCE</text>
+            <path class="edge reference" d="M350 568 C455 568 500 242 605 242"></path>
+            <text class="edge-label" x="437" y="420">REFERENCED_BY</text>
+
+            <path class="edge property-edge" d="M720 140 L720 194"></path>
+            <text class="edge-label" x="730" y="171">HasProperty</text>
+            <path class="edge property-edge" d="M765 140 C820 162 820 300 765 304"></path>
+            <text class="edge-label" x="800" y="233">HasProperty</text>
+            <path class="edge property-edge" d="M720 460 L720 514"></path>
+            <text class="edge-label" x="730" y="492">HasProperty</text>
+
+            <path class="edge property-edge" d="M1090 222 L835 222"></path>
+            <text class="edge-label" x="929" y="211">HAS_PROPERTY</text>
+            <path class="edge property-edge" d="M1090 322 L835 322"></path>
+            <text class="edge-label" x="929" y="311">HAS_PROPERTY</text>
+            <path class="edge property-edge" d="M1090 542 L835 542"></path>
+            <text class="edge-label" x="929" y="531">HAS_PROPERTY</text>
+
+            <g class="node timeline"><rect x="70" y="84" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="107">E-T-SALE</text><text class="node-name" x="88" y="126">TimelineEntry · source is sale tag</text></g>
+            <g class="node timeline"><rect x="70" y="174" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="197">E-P-FLAT</text><text class="node-name" x="88" y="216">TimelineEntry · source is flat property</text></g>
+            <g class="node timeline"><rect x="70" y="264" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="287">E-P-HOUSE</text><text class="node-name" x="88" y="306">TimelineEntry · source is house property</text></g>
+            <g class="node timeline"><rect x="70" y="354" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="377">E-P-RENT</text><text class="node-name" x="88" y="396">TimelineEntry · unrelated rental source</text></g>
+            <g class="node timeline"><rect x="70" y="464" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="487">E-REF-TAG</text><text class="node-name" x="88" y="506">Rental source · references sale tag</text></g>
+            <g class="node timeline"><rect x="70" y="554" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="577">E-REF-PROPERTY</text><text class="node-name" x="88" y="596">Rental source · references flat property</text></g>
+
+            <g class="node tag"><rect x="605" y="84" width="230" height="56" rx="9"></rect><text class="node-id" x="623" y="107">T-SALE · Tag</text><text class="node-name" x="623" y="126">Property for sale</text></g>
+            <g class="node property"><rect x="605" y="194" width="230" height="56" rx="9"></rect><text class="node-id" x="623" y="217">P-FLAT · Property</text><text class="node-name" x="623" y="236">Flat for sale</text></g>
+            <g class="node property"><rect x="605" y="294" width="230" height="56" rx="9"></rect><text class="node-id" x="623" y="317">P-HOUSE · Property</text><text class="node-name" x="623" y="336">House for sale</text></g>
+            <g class="node tag"><rect x="605" y="404" width="230" height="56" rx="9"></rect><text class="node-id" x="623" y="427">T-RENT · Tag</text><text class="node-name" x="623" y="446">Property for rent</text></g>
+            <g class="node property"><rect x="605" y="514" width="230" height="56" rx="9"></rect><text class="node-id" x="623" y="537">P-RENT · Property</text><text class="node-name" x="623" y="556">Flat for rent</text></g>
+
+            <g class="node subdivision"><rect x="1090" y="194" width="250" height="56" rx="9"></rect><text class="node-id" x="1108" y="217">S-STOCKHOLM</text><text class="node-name" x="1108" y="236">CountrySubdivision · Stockholm</text></g>
+            <g class="node subdivision"><rect x="1090" y="294" width="250" height="56" rx="9"></rect><text class="node-id" x="1108" y="317">S-GOTHENBURG</text><text class="node-name" x="1108" y="336">CountrySubdivision · Gothenburg</text></g>
+            <g class="node subdivision"><rect x="1090" y="514" width="250" height="56" rx="9"></rect><text class="node-id" x="1108" y="537">S-PARIS</text><text class="node-name" x="1108" y="556">CountrySubdivision · Paris</text></g>
+          </svg>
+          <figcaption>Solid arrows show source or structural relationships. Dashed amber arrows are reference-only connections.</figcaption>
+        </figure>
+
+        <h3 id="a1">A1 · Select tag T-SALE</h3>
+        <div class="filter-box">tags = [T-SALE]</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Candidate</th><th>Status</th><th>Reason or decision required</th></tr></thead>
+            <tbody>
+              <tr><td><code>E-T-SALE</code></td><td><span class="status yes">✓ Match</span></td><td>Its source is the selected tag.</td></tr>
+              <tr><td><code>E-P-FLAT</code>, <code>E-P-HOUSE</code></td><td><span class="status yes">✓ Match</span></td><td>Their sources are properties reached from the selected tag.</td></tr>
+              <tr><td><code>S-STOCKHOLM</code>, <code>S-GOTHENBURG</code></td><td><span class="status yes">✓ Match</span></td><td>They have properties reached from the selected tag.</td></tr>
+              <tr><td><code>T-SALE</code></td><td><span class="status open">? Open</span></td><td>Include only if Tag becomes a Segment result type.</td></tr>
+              <tr><td><code>E-REF-TAG</code></td><td><span class="status open">? Open</span></td><td>It references the selected tag but is sourced by the rental tag.</td></tr>
+              <tr><td><code>E-REF-PROPERTY</code></td><td><span class="status open">? Open</span></td><td>It references an expanded property but is sourced by an unrelated property.</td></tr>
+              <tr><td><code>P-FLAT</code>, <code>P-HOUSE</code></td><td><span class="status no">× Exclude</span></td><td>Properties are filter/connecting nodes, not requested result rows.</td></tr>
+              <tr><td><code>E-P-RENT</code>, <code>S-PARIS</code>, <code>T-RENT</code></td><td><span class="status no">× Exclude</span></td><td>They belong only to the unrelated rental group.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">This example treats tag expansion as exactly one outgoing <code>Tag-[:HasProperty]-&gt;Property</code> hop. It does not walk back to other tags or sideways to sibling properties.</p>
+
+        <h3 id="a2">A2 · Select property P-FLAT</h3>
+        <div class="filter-box">properties = [P-FLAT]</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Candidate</th><th>Status</th><th>Reason or decision required</th></tr></thead>
+            <tbody>
+              <tr><td><code>E-P-FLAT</code></td><td><span class="status yes">✓ Match</span></td><td>Its source is the selected property.</td></tr>
+              <tr><td><code>S-STOCKHOLM</code></td><td><span class="status yes">✓ Match</span></td><td>It has the selected property.</td></tr>
+              <tr><td><code>E-T-SALE</code></td><td><span class="status open">? Open</span></td><td>This requires reverse expansion from property to tag.</td></tr>
+              <tr><td><code>T-SALE</code></td><td><span class="status open">? Open</span></td><td>This requires reverse expansion and Tag as a result type.</td></tr>
+              <tr><td><code>E-REF-PROPERTY</code></td><td><span class="status open">? Open</span></td><td>It references the property but has a different source.</td></tr>
+              <tr><td><code>E-P-HOUSE</code>, <code>S-GOTHENBURG</code></td><td><span class="status no">× Exclude</span></td><td>A shared tag should not automatically include sibling properties.</td></tr>
+              <tr><td><code>E-P-RENT</code>, <code>S-PARIS</code>, <code>T-RENT</code></td><td><span class="status no">× Exclude</span></td><td>They are unrelated to the selected property.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 id="a3">A3 · Select several tags or properties</h3>
+        <p class="lead">“One or several” does not establish whether several values mean ANY or ALL. The same graph makes the difference visible.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Filter</th><th>ANY interpretation</th><th>ALL interpretation</th></tr></thead>
+            <tbody>
+              <tr><td><code>tags = [T-SALE, T-RENT]</code></td><td>Union of both groups: all four direct events and all three subdivisions.</td><td>Usually empty; no candidate is connected to both tags.</td></tr>
+              <tr><td><code>properties = [P-FLAT, P-HOUSE]</code></td><td><code>E-P-FLAT</code>, <code>E-P-HOUSE</code>, <code>S-STOCKHOLM</code>, <code>S-GOTHENBURG</code>.</td><td>Usually empty; no candidate has both properties.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">Suggested default: ANY within one filter type. Keep a separate AND/OR decision for combining different filter types. Existing Segments combine different non-empty filter types with AND.</p>
+      </section>
+
+      <section class="section" id="state-b">
+        <p class="section-kicker">Database state B</p>
+        <h2>Location branch matching</h2>
+        <p class="lead">This state separates direct location sources, tag/property location inheritance, subdivision-owned properties, reference-only location links, and an unrelated country branch.</p>
+
+        <figure class="diagram-shell">
+          <svg class="graph" viewBox="0 0 1500 920" role="img" aria-labelledby="state-b-title state-b-desc">
+            <title id="state-b-title">Location branch matching graph</title>
+            <desc id="state-b-desc">Timeline entries connect to location, tag, or property sources. Tags and properties may have explicit locations in the Sweden or France subdivision trees.</desc>
+            <defs>
+              <marker id="arrow-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#526577"></path>
+              </marker>
+            </defs>
+
+            <rect class="lane" x="20" y="28" width="390" height="860" rx="14"></rect>
+            <rect class="lane" x="455" y="28" width="400" height="860" rx="14"></rect>
+            <rect class="lane" x="900" y="28" width="580" height="860" rx="14"></rect>
+            <text class="lane-title" x="45" y="58">Timeline entries</text>
+            <text class="lane-title" x="480" y="58">Located tags and properties</text>
+            <text class="lane-title" x="925" y="58">Geography</text>
+
+            <path class="edge" style="marker-end:url(#arrow-b)" d="M350 102 C590 102 835 94 1080 94"></path><text class="edge-label" x="700" y="88">HAS_SOURCE</text>
+            <path class="edge" style="marker-end:url(#arrow-b)" d="M350 182 C600 182 760 214 1010 214"></path><text class="edge-label" x="700" y="190">HAS_SOURCE</text>
+            <path class="edge" style="marker-end:url(#arrow-b)" d="M350 262 C610 262 750 334 1010 334"></path><text class="edge-label" x="700" y="285">HAS_SOURCE</text>
+            <path class="edge" style="marker-end:url(#arrow-b)" d="M350 342 C630 342 890 214 1170 214"></path><text class="edge-label" x="740" y="304">HAS_SOURCE</text>
+
+            <path class="edge" style="marker-end:url(#arrow-b)" d="M350 442 L545 102"></path><text class="edge-label" x="410" y="283">HAS_SOURCE</text>
+            <path class="edge" style="marker-end:url(#arrow-b)" d="M350 522 L545 302"></path><text class="edge-label" x="410" y="421">HAS_SOURCE</text>
+            <path class="edge" style="marker-end:url(#arrow-b)" d="M350 602 L545 402"></path><text class="edge-label" x="410" y="512">HAS_SOURCE</text>
+            <path class="edge" style="marker-end:url(#arrow-b)" d="M350 682 L545 502"></path><text class="edge-label" x="410" y="600">HAS_SOURCE</text>
+            <path class="edge" style="marker-end:url(#arrow-b)" d="M350 762 C440 762 455 742 545 742"></path><text class="edge-label" x="419" y="741">HAS_SOURCE</text>
+            <path class="edge reference" style="marker-end:url(#arrow-b)" d="M350 742 C655 742 705 354 1010 354"></path><text class="edge-label" x="676" y="557">REFERENCED_BY</text>
+            <path class="edge" style="marker-end:url(#arrow-b)" d="M350 842 C700 842 835 774 1185 774"></path><text class="edge-label" x="740" y="820">HAS_SOURCE</text>
+
+            <path class="edge location" style="marker-end:url(#arrow-b)" d="M775 102 C890 102 965 94 1080 94"></path><text class="edge-label" x="872" y="89">HAS_LOCATION</text>
+            <path class="edge location" style="marker-end:url(#arrow-b)" d="M775 302 C875 302 910 334 1010 334"></path><text class="edge-label" x="850" y="300">HAS_LOCATION</text>
+            <path class="edge location" style="marker-end:url(#arrow-b)" d="M775 402 C875 402 910 354 1010 354"></path><text class="edge-label" x="850" y="385">HAS_LOCATION</text>
+            <path class="edge property-edge" style="marker-end:url(#arrow-b)" d="M1010 374 C900 420 885 502 775 502"></path><text class="edge-label" x="834" y="450">HAS_PROPERTY</text>
+            <path class="edge location" style="marker-end:url(#arrow-b)" d="M775 742 C965 742 995 774 1185 774"></path><text class="edge-label" x="900" y="742">HAS_LOCATION</text>
+
+            <path class="edge location" style="marker-end:url(#arrow-b)" d="M1135 306 L1135 242"></path><text class="edge-label" x="1146" y="278">SUBDIVISION_PARENT</text>
+            <path class="edge location" style="marker-end:url(#arrow-b)" d="M1080 214 C1040 174 1070 142 1120 122"></path><text class="edge-label" x="982" y="166">SUBDIVISION_PARENT</text>
+            <path class="edge location" style="marker-end:url(#arrow-b)" d="M1295 214 C1340 175 1285 135 1230 122"></path><text class="edge-label" x="1264" y="165">SUBDIVISION_PARENT</text>
+            <path class="edge location" style="marker-end:url(#arrow-b)" d="M1305 682 L1305 626"></path><text class="edge-label" x="1316" y="659">SUBDIVISION_PARENT</text>
+            <path class="edge location" style="marker-end:url(#arrow-b)" d="M1305 746 L1305 710"></path>
+
+            <g class="node timeline"><rect x="70" y="74" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="97">E-SE</text><text class="node-name" x="88" y="116">TimelineEntry · source is Sweden</text></g>
+            <g class="node timeline"><rect x="70" y="154" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="177">E-VG</text><text class="node-name" x="88" y="196">TimelineEntry · source is Västra Götaland</text></g>
+            <g class="node timeline"><rect x="70" y="234" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="257">E-GOT</text><text class="node-name" x="88" y="276">TimelineEntry · source is Gothenburg</text></g>
+            <g class="node timeline"><rect x="70" y="314" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="337">E-STO</text><text class="node-name" x="88" y="356">TimelineEntry · source is Stockholm</text></g>
+            <g class="node timeline"><rect x="70" y="414" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="437">E-TAG-SE</text><text class="node-name" x="88" y="456">TimelineEntry · source is Sweden tag</text></g>
+            <g class="node timeline"><rect x="70" y="494" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="517">E-TAG-GOT</text><text class="node-name" x="88" y="536">TimelineEntry · source is port tag</text></g>
+            <g class="node timeline"><rect x="70" y="574" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="597">E-PROPERTY-GOT</text><text class="node-name" x="88" y="616">TimelineEntry · explicit property location</text></g>
+            <g class="node timeline"><rect x="70" y="654" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="677">E-PROPERTY-OWNED</text><text class="node-name" x="88" y="696">TimelineEntry · subdivision-owned property</text></g>
+            <g class="node timeline"><rect x="70" y="734" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="757">E-REF-GOT</text><text class="node-name" x="88" y="776">Paris source · references Gothenburg</text></g>
+            <g class="node timeline"><rect x="70" y="814" width="280" height="56" rx="9"></rect><text class="node-id" x="88" y="837">E-PARIS</text><text class="node-name" x="88" y="856">TimelineEntry · source is Paris</text></g>
+
+            <g class="node tag"><rect x="545" y="74" width="230" height="56" rx="9"></rect><text class="node-id" x="563" y="97">T-SWEDEN · Tag</text><text class="node-name" x="563" y="116">Sweden expansion</text></g>
+            <g class="node tag"><rect x="545" y="274" width="230" height="56" rx="9"></rect><text class="node-id" x="563" y="297">T-PORT · Tag</text><text class="node-name" x="563" y="316">Port project</text></g>
+            <g class="node property"><rect x="545" y="374" width="230" height="56" rx="9"></rect><text class="node-id" x="563" y="397">P-LOGISTICS · Property</text><text class="node-name" x="563" y="416">Explicitly located in Gothenburg</text></g>
+            <g class="node property"><rect x="545" y="474" width="230" height="56" rx="9"></rect><text class="node-id" x="563" y="497">P-PORT-ONLY · Property</text><text class="node-name" x="563" y="516">Owned by subdivision; no HAS_LOCATION</text></g>
+            <g class="node tag"><rect x="545" y="714" width="230" height="56" rx="9"></rect><text class="node-id" x="563" y="737">T-PARIS · Tag</text><text class="node-name" x="563" y="756">Paris project</text></g>
+
+            <g class="node country"><rect x="1080" y="66" width="150" height="56" rx="9"></rect><text class="node-id" x="1098" y="89">C-SE</text><text class="node-name" x="1098" y="108">Country · Sweden</text></g>
+            <g class="node subdivision"><rect x="1010" y="186" width="250" height="56" rx="9"></rect><text class="node-id" x="1028" y="209">S-VG</text><text class="node-name" x="1028" y="228">Subdivision · Västra Götaland</text></g>
+            <g class="node subdivision"><rect x="1010" y="306" width="250" height="56" rx="9"></rect><text class="node-id" x="1028" y="329">S-GOT</text><text class="node-name" x="1028" y="348">Subdivision · Gothenburg</text></g>
+            <g class="node subdivision"><rect x="1170" y="186" width="250" height="56" rx="9"></rect><text class="node-id" x="1188" y="209">S-STO</text><text class="node-name" x="1188" y="228">Subdivision · Stockholm</text></g>
+            <g class="node country"><rect x="1230" y="570" width="150" height="56" rx="9"></rect><text class="node-id" x="1248" y="593">C-FR</text><text class="node-name" x="1248" y="612">Country · France</text></g>
+            <g class="node subdivision"><rect x="1185" y="654" width="240" height="56" rx="9"></rect><text class="node-id" x="1203" y="677">S-IDF</text><text class="node-name" x="1203" y="696">Subdivision · Île-de-France</text></g>
+            <g class="node subdivision"><rect x="1185" y="746" width="240" height="56" rx="9"></rect><text class="node-id" x="1203" y="769">S-PARIS</text><text class="node-name" x="1203" y="788">Subdivision · Paris</text></g>
+          </svg>
+          <figcaption>Blue arrows represent location and hierarchy relationships. The dashed amber arrow is a reference, not a source.</figcaption>
+        </figure>
+
+        <h3 id="b1">B1 · Select the whole Sweden branch</h3>
+        <div class="filter-box">locations = [C-SE] &nbsp;·&nbsp; scope = SELF_AND_DESCENDANTS</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Candidate</th><th>Status</th><th>Reason or decision required</th></tr></thead>
+            <tbody>
+              <tr><td><code>S-VG</code>, <code>S-GOT</code>, <code>S-STO</code></td><td><span class="status yes">✓ Match</span></td><td>They are subdivisions below Sweden.</td></tr>
+              <tr><td><code>E-SE</code></td><td><span class="status yes">✓ Match</span></td><td>Its source is the selected country.</td></tr>
+              <tr><td><code>E-VG</code>, <code>E-GOT</code>, <code>E-STO</code></td><td><span class="status yes">✓ Match</span></td><td>Their sources are subdivisions in the branch.</td></tr>
+              <tr><td><code>E-TAG-SE</code>, <code>E-TAG-GOT</code></td><td><span class="status open">? Open</span></td><td>Include if entries inherit the explicit location of their tag source.</td></tr>
+              <tr><td><code>E-PROPERTY-GOT</code></td><td><span class="status open">? Open</span></td><td>Include if entries inherit the explicit location of their property source.</td></tr>
+              <tr><td><code>E-PROPERTY-OWNED</code></td><td><span class="status open">? Open</span></td><td>Include only if subdivision ownership gives a property an effective location.</td></tr>
+              <tr><td><code>T-SWEDEN</code>, <code>T-PORT</code></td><td><span class="status open">? Open</span></td><td>Include only if located tags are Segment result rows.</td></tr>
+              <tr><td><code>E-REF-GOT</code></td><td><span class="status open">? Open</span></td><td>It only references Gothenburg; its source is a tag located in France.</td></tr>
+              <tr><td><code>C-SE</code></td><td><span class="status no">× Exclude</span></td><td>A country is a filter/root, not a requested result row.</td></tr>
+              <tr><td><code>S-IDF</code>, <code>S-PARIS</code>, <code>T-PARIS</code>, <code>E-PARIS</code></td><td><span class="status no">× Exclude</span></td><td>They belong to the France branch.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 id="b2">B2 · Select Västra Götaland with different scopes</h3>
+        <div class="filter-box">locations = [S-VG]</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Candidate</th><th>SELF_ONLY</th><th>DIRECT_CHILDREN</th><th>SELF_AND_DESCENDANTS</th></tr></thead>
+            <tbody>
+              <tr><td><code>S-VG</code></td><td>✓</td><td>×</td><td>✓</td></tr>
+              <tr><td><code>S-GOT</code></td><td>×</td><td>✓</td><td>✓</td></tr>
+              <tr><td><code>S-STO</code></td><td>×</td><td>×</td><td>×</td></tr>
+              <tr><td><code>E-VG</code></td><td>✓</td><td>×</td><td>✓</td></tr>
+              <tr><td><code>E-GOT</code></td><td>×</td><td>✓</td><td>✓</td></tr>
+              <tr><td><code>E-STO</code></td><td>×</td><td>×</td><td>×</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="scope-grid" aria-label="Suggested location scope model">
+          <div class="scope-card"><code>SELF_ONLY</code><p>Depth 0.</p></div>
+          <div class="scope-card"><code>DIRECT_CHILDREN</code><p>Depth 1, excluding self.</p></div>
+          <div class="scope-card"><code>SELF_AND_DESCENDANTS</code><p>Depth 0 through any depth.</p></div>
+          <div class="scope-card"><code>DESCENDANTS_AT_DEPTH(n)</code><p>Exactly depth n.</p></div>
+        </div>
+        <p class="note">For a timeline entry, depth means the depth of the location that caused the match. If several paths match the same entry, return it once.</p>
+      </section>
+
+      <section class="section" id="baseline">
+        <p class="section-kicker">Discussion draft</p>
+        <h2>Proposed baseline interpretation</h2>
+        <p class="lead">A small, predictable rule set that satisfies the clearest parts of the requirements while keeping unresolved traversal rules explicit.</p>
+        <ol class="baseline">
+          <li>Result rows are <code>TimelineEntry</code> and <code>CountrySubdivision</code>, not Tag, Property, or Country.</li>
+          <li>A selected tag expands one hop to its <code>HasProperty</code> properties.</li>
+          <li>A property does not expand backwards to tags or sideways to sibling properties.</li>
+          <li>A tag/property filter matches an entry when its source is selected or expanded.</li>
+          <li>A tag/property filter matches a subdivision having a selected or expanded property.</li>
+          <li><code>REFERENCED_BY</code> does not match unless an “include references” option is added.</li>
+          <li>Location filters default to <code>SELF_AND_DESCENDANTS</code>.</li>
+          <li>Location filters match subdivisions in scope and entries directly sourced by a location in scope.</li>
+          <li>Location inheritance from tag/property sources remains a separately confirmed rule.</li>
+          <li>Use ANY within one filter type and AND between different non-empty filter types.</li>
+          <li>Return each entity once, even when several paths match it.</li>
+        </ol>
+      </section>
+
+      <section class="section" id="decisions">
+        <p class="section-kicker">Before implementation</p>
+        <h2>Decisions required</h2>
+        <ul class="decisions">
+          <li><strong>Result types:</strong> Are tags returned, or only used as filters and sources?</li>
+          <li><strong>References:</strong> Does <code>REFERENCED_BY</code> count, or only <code>HAS_SOURCE</code>?</li>
+          <li><strong>Reverse traversal:</strong> Does selecting a property include entries sourced by tags having it?</li>
+          <li><strong>Located sources:</strong> Do entries inherit the explicit location of their tag/property source?</li>
+          <li><strong>Owned properties:</strong> Does subdivision <code>HAS_PROPERTY</code> establish an effective property location?</li>
+          <li><strong>Hierarchy scope:</strong> Which depth scopes are supported, and which is the default?</li>
+          <li><strong>Multiple values:</strong> Confirm ANY within one filter type.</li>
+          <li><strong>Mixed filters:</strong> Confirm AND between tag, property, and location filters.</li>
+          <li><strong>Selected row:</strong> Does a selected subdivision appear even without entries or properties?</li>
+          <li><strong>Deduplication:</strong> Confirm that multiple matching paths still produce one result row.</li>
+        </ul>
+        <p class="note">After these decisions are answered, each open row can become a required match or exclusion and the tables can be used directly as integration-test acceptance cases.</p>
+      </section>
+    </main>
+  </div>
+
+  <footer class="page-footer">Static, dependency-free view · Source specification: SEGMENT_MATCHING_EXAMPLES.md</footer>
+</body>
+</html>
